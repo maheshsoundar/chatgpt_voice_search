@@ -6,19 +6,22 @@ class ChatGPTResponse:
 
     def __init__(self,max_length:int=200,num_return_sequences:int=1):
         # Load pre-trained GPT-2 model and tokenizer
-        self.openai = openai
+        self.openai_client = self.__get_openai_client()
         self.model = GPT2LMHeadModel.from_pretrained("gpt2")
         self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
         self.max_length = max_length
         self.num_return_sequences = num_return_sequences
 
-    def __interact_gpt3(self,search:str):
-        self.openai.api_key = os.getenv("OPENAI_API_KEY") #Please set this env variable with the appropriate open ai key
-
-        response = self.openai.ChatCompletion.create(model="gpt-3.5-turbo", \
-                                               messages=[{"role": "user", "content": search}])
+    def __get_openai_client(self):
+        return openai.OpenAI()  #Please set the env variable "OPENAI_API_KEY" with the appropriate open ai key
     
-        return response.choices[0].text.strip()
+    def __interact_gpt3(self,search:str):
+        messages = [ {"role": "user", "content":search} ] 
+
+        response = self.openai_client.chat.completions.create(model="gpt-3.5-turbo", \
+                                               messages=messages)
+    
+        return response.choices[0].message.content
     
     def __interact_gpt2(self,search:str):
         # Tokenize input prompt
